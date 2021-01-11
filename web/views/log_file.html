@@ -30,3 +30,4 @@
 </table>
 <div id="filter-meta" ng-if="$parent.currentLog">Displaying <span id="filter-count">{{ $parent.currentLog.lines.length }}</span> of {{ $parent.currentLog.total_lines }} lines.</div>
 <a id="next-button" ng-show="$parent.currentLog.next_page_url" href="javascript:void(0);" ng-disabled="busy" class="btn btn-primary" ng-click="getMore()"><i class="fa fa-arrow-down"></i> Load<span ng-if="busy">ing</span> <span ng-if="config.reverse_line_order"> older</span><span ng-if="!config.reverse_line_order"> newer</span> lines...</a>
+

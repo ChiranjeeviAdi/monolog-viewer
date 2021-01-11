@@ -12,12 +12,15 @@ define('BASE_URL', ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 
     '://'.$_SERVER['SERVER_NAME'].
     str_replace('/index.php', '', $_SERVER['SCRIPT_NAME'])
 );
-
+$fileDate = $_GET['date'];
 $app = new Silex\Application();
 $app['template_url'] = BASE_URL;
 
+
+// $fileContents = file_get_contents('/Library/WebServer/Documents/smartsellapi4/logs/2021-01-07.log');
+
 if (is_readable(CONFIG_FILE)) {
-    $app->register(new DerAlex\Silex\YamlConfigServiceProvider(CONFIG_FILE));
+    $app->register(new DerAlex\Silex\YamlConfigServiceProvider(CONFIG_FILE,$fileDate));
     $app['debug'] = ($app['config']['debug']);
     Symfony\Component\Debug\ExceptionHandler::register(!$app['debug']);
     if (in_array($app['config']['timezone'], DateTimeZone::listIdentifiers())) {

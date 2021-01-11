@@ -8,9 +8,22 @@ Object.prototype.getKeyByValue = function( value ) {
         }
     }
 };
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
 
-controllers.controller('LogFileController', ['$scope', '$http', '$routeParams', '$timeout',
-    function ($scope, $http, $routeParams) {
+    if (month.length < 2) 
+        month = '0' + month;
+    if (day.length < 2) 
+        day = '0' + day;
+
+    return [year, month, day].join('-');
+}
+
+controllers.controller('LogFileController', ['$scope', '$http', '$routeParams', '$timeout','$filter',
+    function ($scope, $http, $routeParams,$timeout,$filter) {
         $scope.route = $routeParams;
         $scope.busy = false;
         $scope.$parent.busySearch = false;
@@ -21,7 +34,9 @@ controllers.controller('LogFileController', ['$scope', '$http', '$routeParams', 
         $scope.filterTextTimeout = null;
         $scope.init = true;
         $scope.$parent.searchInputWide = false;
+        // $scope.fileDate = $filter("date")(Date.now(), 'yyyy-MM-dd');
 
+        console.log($scope.fileDate);
         $scope.$parent.levels = {
             100: 'debug',
             200: 'info',
@@ -57,13 +72,19 @@ controllers.controller('LogFileController', ['$scope', '$http', '$routeParams', 
             console.error(e);
         };
 
+
         $scope.getLog = function (client, log) {
+            console.log($scope.$parent.filter,'$scope.$parent.filter')
+            if($scope.fileDate&&angular.isDefined($scope.fileDate)&&$scope.fileDate!=''){
+                $scope.$parent.filter.fileDate = formatDate($scope.fileDate);
+            }
             $scope.busy = true;
             $http.get('api/logs/'+client+'/'+log, { params: $scope.$parent.filter })
                 .then(function successCallback(response) {
                     $scope.$parent.currentLog = response.data;
                     $scope.$parent.busySearch = false;
                     $scope.scrollTop();
+                    $scope.busy = false;
                     initTooltips();
                 }, function errorCallback() {
                     $scope.error('Could not load log lines');
@@ -129,7 +150,7 @@ controllers.controller('LogFileController', ['$scope', '$http', '$routeParams', 
 
         $scope.getConfig();
         $scope.getLog($scope.route.client, $scope.route.log);
-        $scope.$watchGroup(['$parent.filter.logger', '$parent.filter.level', '$parent.filter.text'], function(nv, ov) {
+        $scope.$watchGroup(['$parent.filter.logger', '$parent.filter.level', '$parent.filter.text','fileDate'], function(nv, ov) {
             if($scope.init) {
                 $scope.init = false;
             } else {

@@ -103,7 +103,43 @@ $api->get('/logs/{clientSlug}/{logSlug}', function (Silex\Application $app, Requ
         $filter = null;
     }
 
-    $viewer = new Syonix\LogViewer\LogManager($app['config']['logs']);
+    /**
+    *Customization Startshere 
+    *@author chiranjeevi
+    * Date wise log file updated for yml and reads the same data.
+    */
+    $fileDate =$_GET['fileDate'];
+    if(!isset($fileDate)){
+        $fileDate = date('Y-m-d');
+    }
+    $logsFilesObj = $app['config']['logs'];
+
+    if($logsFilesObj['Demo']['Custom Pattern']!=''){
+        $filePathObj = $logsFilesObj['Demo']['Custom Pattern'];
+        $filePath = $filePathObj['path'];
+        $filePathArr = explode('/', $filePath);
+        $filePath = $filePath[count($filePathArr)-1];
+        $filePathArr[count($filePathArr)-1] = $fileDate.".log";
+        $logsFilesObj['Demo']['Custom Pattern']['path'] = implode('/', $filePathArr);
+        // print_r($logsFilesObj['Demo']['Custom Pattern']['path']);die;
+    }
+    if($logsFilesObj['Demo']['Demo-Log-File']!=''){
+        $filePathObj =  $logsFilesObj['Demo']['Demo-Log-File'];
+        $filePath = $filePathObj['path'];
+        $filePathArr = explode('/', $filePath);
+        $filePath = $filePath[count($filePathArr)-1];
+        $filePathArr[count($filePathArr)-1] = $fileDate.".log";
+        $logsFilesObj['Demo']['Demo-Log-File']['path'] = implode('/', $filePathArr);
+    }
+    
+
+    // $app['config']['logs'] =  $logsFilesObj;
+    // print_r($app['config']['logs']);die;
+    $viewer = new Syonix\LogViewer\LogManager($logsFilesObj);
+
+
+    //Customization ends here.
+
     $logCollection = $viewer->getLogCollection($clientSlug);
     if (null === $logCollection) {
         $error = ['message' => 'The client was not found.'];
@@ -142,7 +178,7 @@ $api->get('/logs/{clientSlug}/{logSlug}', function (Silex\Application $app, Requ
             'name' => $logCollection->getName(),
             'slug' => $logCollection->getSlug(),
         ],
-        'lines'         => $log->getLines($limit, $offset),
+        'lines'         => $log->getLines($limit, $offset,$filter),
         'total_lines'   => $totalLines,
         'offset'        => $offset,
         'limit'         => $limit,
